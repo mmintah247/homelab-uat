@@ -1,19 +1,21 @@
 services:
 
   db:
-    image: postgres:17:latest
+    image: postgres:17-alpine
+    container_name: db-uat
     environment:
       POSTGRES_DB: wiki_prod_db_update
       POSTGRES_PASSWORD: "%ZmJPw99G/}0_SP3"
       POSTGRES_USER: groundmouse-uat
-    logging:
-      driver: none
     restart: unless-stopped
     volumes:
       - db-data:/var/lib/postgresql/data
+    networks:
+      - homelab-uat-network
 
   wiki:
     image: ghcr.io/requarks/wiki:2
+    container_name: wiki-uat
     depends_on:
       - db
     environment:
@@ -28,6 +30,12 @@ services:
       - "80:3000"
     volumes:
       - ./config.yml:/wiki/config.yml
+    networks:
+      - homelab-uat-network
 
 volumes:
   db-data:
+
+networks:
+  homelab-uat-network:
+    driver: bridge
