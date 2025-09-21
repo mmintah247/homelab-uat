@@ -1,0 +1,33 @@
+services:
+
+  db:
+    image: postgres:17:latest
+    environment:
+      POSTGRES_DB: wiki_prod_db_update
+      POSTGRES_PASSWORD: "%ZmJPw99G/}0_SP3"
+      POSTGRES_USER: groundmouse-uat
+    logging:
+      driver: none
+    restart: unless-stopped
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  wiki:
+    image: ghcr.io/requarks/wiki:2
+    depends_on:
+      - db
+    environment:
+      DB_TYPE: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: groundmouse-uat
+      DB_PASS: "%ZmJPw99G/}0_SP3"
+      DB_NAME: wiki_prod_db_update
+    restart: unless-stopped
+    ports:
+      - "80:3000"
+    volumes:
+      - ./config.yml:/wiki/config.yml
+
+volumes:
+  db-data:

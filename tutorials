@@ -1,0 +1,5 @@
+ python3 -m venv venv
+ source venv/bin/activate
+
+ # Create a database dump
+docker-compose exec db pg_dump -U groundmouse-uat wiki_prod_db_update > backup.sql
