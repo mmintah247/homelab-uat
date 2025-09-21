@@ -11,6 +11,11 @@ services:
     restart: unless-stopped
     volumes:
       - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U groundmouse-uat -d wiki_prod_db_update"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
     networks:
       - homelab-uat-network
 
@@ -29,8 +34,8 @@ services:
     restart: unless-stopped
     ports:
       - "80:3000"
-    # volumes:
-    #   - ./config.yml:/wiki/config.yml
+    volumes:
+      - ./config.yml:/wiki/config.yml
     networks:
       - homelab-uat-network
 
