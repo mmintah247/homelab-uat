@@ -3,6 +3,7 @@ services:
   db:
     image: postgres:15-alpine
     container_name: db-uat
+    privileged: true
     environment:
       POSTGRES_DB: wiki_prod_db_update
       POSTGRES_PASSWORD: "%ZmJPw99G/}0_SP3"
@@ -14,8 +15,9 @@ services:
       - homelab-uat-network
 
   wiki:
-    image: ghcr.io/requarks/wiki:2
+    image: ghcr.io/requarks/wiki:2.5
     container_name: wiki-uat
+    privileged: true
     depends_on:
       - db
     environment:
@@ -25,9 +27,16 @@ services:
       DB_USER: groundmouse-uat
       DB_PASS: "%ZmJPw99G/}0_SP3"
       DB_NAME: wiki_prod_db_update
+      LETSENCRYPT_DOMAIN: homelab-uat.mmintah247.com
+      LETSENCRYPT_EMAIL: groundmouse18@gmail.com
     restart: unless-stopped
     ports:
       - "80:3000"
+      - "443:3443"
+    volumes:
+      - ./config.yml:/wiki/config.yml   # <--- added bind mount
+      - /data:/wiki/.data:rw,Z
+      - /data/new_data/:/wiki/data/:rw,Z
     networks:
       - homelab-uat-network
 
@@ -36,4 +45,3 @@ volumes:
 
 networks:
   homelab-uat-network:
-    driver: bridge
