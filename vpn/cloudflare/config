@@ -1,0 +1,8 @@
+# SSH config for local VPN / Cloudflare access
+Host 10.211.55.8                    # direct SSH to the private host on your LAN/VPN
+  HostName 10.211.55.8              # IP address of the host on your LAN/VPN
+  User root                         # username to log in as
+
+Host bastion.mmintah247.com         # SSH to the host via Cloudflare
+  User root                         # username to log in as
+  ProxyCommand /opt/homebrew/bin/cloudflared access ssh --hostname %h    # use cloudflared to proxy the connection

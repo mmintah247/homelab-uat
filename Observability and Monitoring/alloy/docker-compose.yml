@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
+    restart: unless-stopped
+    ports:
+      - "12345:12345"
+    volumes:
+      - /data/alloy:/etc/alloy/config.alloy:ro,Z
+      - alloy-data:/var/lib/alloy/data
+    command: >
+      run
+      --server.http.listen-addr=0.0.0.0:12345
+      --storage.path=/var/lib/alloy/data
+      /etc/alloy/config.alloy
+
+volumes:
+  alloy-data:
