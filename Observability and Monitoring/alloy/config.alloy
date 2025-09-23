@@ -57,7 +57,7 @@ scrape_interval = "15s"
 prometheus.remote_write "local" {
   endpoint {
     // Send metrics to a locally running Prometheus instance
-    url = "http://prometheus:9090/api/v1/write"
+    url = "https://prometheus.mmintah247.com/api/v1/write"
   }
 }
 
