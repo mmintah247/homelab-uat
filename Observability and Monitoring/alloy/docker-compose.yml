@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   alloy:
     image: grafana/alloy:latest
@@ -8,13 +6,27 @@ services:
     ports:
       - "12345:12345"
     volumes:
-      - /data/alloy:/etc/alloy/config.alloy:ro,Z
+      - /data/alloy/config.alloy:/etc/alloy/config.alloy:ro,Z
+      - /data/alloy/logs:/temp/logs
       - alloy-data:/var/lib/alloy/data
     command: >
       run
       --server.http.listen-addr=0.0.0.0:12345
       --storage.path=/var/lib/alloy/data
       /etc/alloy/config.alloy
+    networks:
+      - homelab-uat-network
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
 
 volumes:
   alloy-data:
+
+networks:
+  homelab-uat-network:

@@ -3,3 +3,6 @@
 
  # Create a database dump
 docker-compose exec db pg_dump -U groundmouse-uat wiki_prod_db_update > backup.sql
+
+
+docker volume inspect root_alloy-data
