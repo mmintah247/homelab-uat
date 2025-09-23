@@ -123,66 +123,12 @@ loki.source.file "logs_integrations_integrations_node_exporter_direct_scrape" {
 }
 
 // Define where to send logs for storage
-
+loki.write "local" {
+    endpoint {
+        // Send logs to a locally running Loki instance
+        url ="http://loki.mmintah247.com/loki/api/v1/push"
+    }
+}
 
 // Enable live debugging features (empty config means use defaults)
-
-
-local.file_match "local_files" {
-    path_targets = [{"__path__" = "/tmp/logs/*.log", service_name = "localfiles", "job" = "python", "hostname" = constants.hostname}]
-}
- 
-loki.source.file "log_scrape" {
-    targets    = local.file_match.local_files.targets
-    forward_to = [loki.write.default.receiver]
-    tail_from_end = true
-
-}
-
-loki.process "local_files" {
-    forward_to = [loki.write.local.receiver]
-
-    stage.static_labels {
-        values = {
-            "app" = "localfiles",
-        }
-    }
-}
-
-local.file_match "container_files" {
-    path_targets = [{"__path__" = "/var/log/*.log", __address__  = "localhost", service_name = "container", host_ip = "192.168.50.10", "job" = "my-container-app", "hostname" = constants.hostname}]
-}
-
-loki.source.file "container_log_scrape" {
-    targets       = local.file_match.container_files.targets
-    forward_to    = [loki.write.default.receiver]
-    tail_from_end = true
-}
-
-loki.process "container_files" {
-    forward_to = [loki.write.default.receiver]
-
-    stage.static_labels {
-        values = {
-            "app" = "containerlogs",
-        }
-    }
-}
-
-loki.write "default" {
-        endpoint {
-                url        = "https://loki.mmintah247.com/loki/api/v1/push"
-                batch_wait = "2s"
-                batch_size = "512KiB"
-                headers    = {
-                        "X-Scope-OrgId" = "default",
-                }
-
-                tls_config {
-                        insecure_skip_verify = true
-                }
-        }
-        external_labels = {}
-}
-
 livedebugging{}
