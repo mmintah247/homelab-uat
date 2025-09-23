@@ -2,31 +2,81 @@ services:
   alloy:
     image: grafana/alloy:latest
     container_name: alloy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     ports:
       - "12345:12345"
     volumes:
       - /data/alloy/config.alloy:/etc/alloy/config.alloy:ro,Z
-      - /data/alloy/logs:/temp/logs
+      - /data/alloy/logs:/tmp/logs:ro,Z
       - alloy-data:/var/lib/alloy/data
     command: >
       run
       --server.http.listen-addr=0.0.0.0:12345
       --storage.path=/var/lib/alloy/data
       /etc/alloy/config.alloy
+    depends_on:
+      - loki
     networks:
       - homelab-uat-network
 
   loki:
     image: grafana/loki:latest
+    container_name: loki
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
     ports:
       - "3100:3100"
     volumes:
-      - ./loki-config.yaml:/etc/loki/local-config.yaml
+      - /data/loki/loki-config.yml:/etc/loki/local-config.yaml:ro,Z
+      - loki-data:/loki
     command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - homelab-uat-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_BASIC_ENABLED=false
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    entrypoint:
+      - sh
+      - -euc
+      - |
+        mkdir -p /etc/grafana/provisioning/datasources
+        cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
+        apiVersion: 1
+        datasources:
+        - name: Loki
+          type: loki
+          access: proxy
+          orgId: 1
+          url: http://host.docker.internal:3100/
+          basicAuth: false
+          isDefault: false
+          version: 1
+          editable: true
+          jsonData:
+            httpHeaderName1: "X-Scope-OrgID"
+          secureJsonData:
+            httpHeaderValue1: "default"
+        EOF
+        /run.sh
+    networks:
+      - homelab-uat-network
 
 volumes:
   alloy-data:
+  loki-data:
 
 networks:
   homelab-uat-network:

@@ -7,8 +7,9 @@ livedebugging {
   enabled = true
 }
 
+
 local.file_match "local_files" {
-    path_targets = [{"__path__" = "/temp/logs/*.log", "job" = "python", "hostname" = constants.hostname}]
+    path_targets = [{"__path__" = "/temp/logs/*.log", service_name = "localfiles", "job" = "python", "hostname" = constants.hostname}]
     sync_period  = "5s"
 }
  
@@ -17,11 +18,48 @@ loki.source.file "log_scrape" {
     forward_to = [loki.write.local.receiver]
     tail_from_end = true
 
+}
 
+loki.process "local_files" {
+    forward_to = [loki.write.local.receiver]
+
+    stage.static_labels {
+        values = {
+            "app" = "localfiles",
+        }
+    }
+}
+
+local.file_match "container_files" {
+    path_targets = [{"__path__" = "/var/log/*.log", __address__  = "localhost", service_name = "container", host_ip = "192.168.50.10", "job" = "my-container-app", "hostname" = constants.hostname}]
+    sync_period = "5s"
+}
+
+loki.source.file "container_log_scrape" {
+    targets       = local.file_match.container_files.targets
+    forward_to    = [loki.write.local.receiver]
+    tail_from_end = true
+}
+
+loki.process "container_files" {
+    forward_to = [loki.write.local.receiver]
+
+    stage.static_labels {
+        values = {
+            "app" = "containerlogs",
+        }
+    }
 }
 
 loki.write "local" {
   endpoint {
-    url = "http://loki:3100/loki/api/v1/push"
+    url = "http://host.docker.internal:3100/loki/api/v1/push"
+    headers    = {
+            "X-Scope-OrgId" = "default",
+    }
+
+    tls_config {
+                        insecure_skip_verify = true
+                }
   }
 }
