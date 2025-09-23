@@ -68,7 +68,7 @@ loki.source.journal "logs_integrations_integrations_node_exporter_journal_scrape
   // Apply relabeling rules to the logs
   relabel_rules = discovery.relabel.logs_integrations_integrations_node_exporter_journal_scrape.rules
   // Send logs to the local Loki instance
-  forward_to    = [loki.write.local.receiver]
+  forward_to    = [loki.write.default.receiver]
 }
 
 // Define which log files to collect for node_exporter
@@ -119,7 +119,7 @@ loki.source.file "logs_integrations_integrations_node_exporter_direct_scrape" {
   // Use targets defined in local.file_match
   targets    = local.file_match.logs_integrations_integrations_node_exporter_direct_scrape.targets
   // Send logs to the local Loki instance
-  forward_to = [loki.write.local.receiver]
+  forward_to = [loki.write.default.receiver]
 }
 
 // Define where to send logs for storage
@@ -140,7 +140,7 @@ loki.source.file "log_scrape" {
 }
 
 loki.process "local_files" {
-    forward_to = [loki.write.local.receiver]
+    forward_to = [loki.write.default.receiver]
 
     stage.static_labels {
         values = {

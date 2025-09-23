@@ -6,7 +6,7 @@ services:
     ports:
       - "12345:12345"
     volumes:
-      - /data/alloy/config.alloy:/etc/alloy/config.alloy:ro,Z
+      - /data/alloy/config.alloy:/etc/alloy/config.alloy:Z
       - /data/alloy/logs:/tmp/logs:ro,Z
       - alloy-data:/var/lib/alloy/data
     command: >
@@ -20,14 +20,14 @@ services:
       - homelab-uat-network
 
   prometheus:
-     image: prom/prometheus:${PROMETHEUS_VERSION:-v3.5.0}
+     image: prom/prometheus:latest
      command:
        - --web.enable-remote-write-receiver
        - --config.file=/etc/prometheus/prometheus.yml
      ports:
       - 9090:9090/tcp
      volumes:
-        - ./prom-config.yaml:/etc/prometheus/prometheus.yml
+        - /data/prometheus/prom-config.yml:/etc/prometheus/prometheus.yml
         
   loki:
     image: grafana/loki:latest
@@ -36,7 +36,7 @@ services:
     ports:
       - "3100:3100"
     volumes:
-      - /data/loki/loki-config.yml:/etc/loki/local-config.yaml:ro,Z
+      - /data/loki/loki-config.yml:/etc/loki/local-config.yaml:Z
       - loki-data:/loki
     command: -config.file=/etc/loki/local-config.yaml
     networks:
